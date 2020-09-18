@@ -1,0 +1,28 @@
+//format details, see https://aka.ms/vscode-remote/devcontainer.json
+{
+	"name": "pulp_operations",
+
+	// Sets the run context to one level up instead of the .devcontainer folder.
+	"context": "..",
+
+	// instead of using dockerfile, just listing image to use here
+	"image": "python:3.8-slim-buster",
+	
+	// Set *default* container specific settings.json values on container create.
+	"settings": {
+		"terminal.integrated.shell.linux": "/bin/bash",
+		"python.pythonPath": "/usr/local/bin/python"
+	},
+
+	// Add the IDs of vscode extensions you want installed when the container is created.
+	"extensions": [
+		"ms-python.vscode-pylance",
+		"davidanson.vscode-markdownlint"
+	],
+	
+	// load in environment variables
+	"runArgs": ["--env-file", ".devcontainer/devcontainer.env"],
+
+	// install requirements from setup.py
+	"postCreateCommand": "pip install ."
+}

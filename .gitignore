@@ -1,0 +1,8 @@
+#env file
+devcontainer.env
+
+# Compiled python modules
+*.pyc
+
+# Test RPM files
+*.rpm
