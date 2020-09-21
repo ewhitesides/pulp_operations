@@ -54,11 +54,12 @@ for repo in repo_config:
             dist_name=f"{repo}-dist"
         )
 
-        #signed
-        pulp_operations.start_sync(
-            repo_name=f"signed-{repo}-repo",
-            remote_name=f"{repo}-{remote_name}",
-            remote_url=remote_url,
-            dist_name=f"signed-{repo}-dist",
-            signservice_name='sign-metadata'
-        )
+        #example using signing
+        #uncomment this to use it
+        #pulp_operations.start_sync(
+        #    repo_name=f"signed-{repo}-repo",
+        #    remote_name=f"{repo}-{remote_name}",
+        #    remote_url=remote_url,
+        #    dist_name=f"signed-{repo}-dist",
+        #    signservice_name='sign-metadata'
+        #)
