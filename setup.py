@@ -7,7 +7,7 @@ setup(
     name='pulp_operations',
     version='1.0',
     author='Erik Whitesides',
-    author_email='ekw45@georgetown.edu',
+    author_email='eklevjer@gmail.com',
     description='tool to perform various tasks on pulp server',
     url='https://gitlab.uis.georgetown.edu/devops/pulp_operations',
     packages=find_packages(),
