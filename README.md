@@ -51,6 +51,7 @@ pulp_operations.start_sync(
 )
 
 #example of syncing/adding to a repository with signed repodata
+#this assumes you have set a signing service named 'sign-metadata' on the server
 pulp_operations.start_sync(
     repo_name='signtest-repo',
     remote_name='signtest-remote',
