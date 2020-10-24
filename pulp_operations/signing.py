@@ -1,8 +1,12 @@
 """signing functions"""
 
+import logging
 import pulpcore.client.pulpcore
 from pulpcore.client.pulpcore.rest import ApiException
 from pulp_operations.api_client_conf import core_configuration
+
+#module logger - child of parent logger 'pulp_operations'
+mlogger = logging.getLogger('pulp_operations.signing')
 
 def get_signservice(signservice_name: str):
     """
@@ -24,9 +28,11 @@ def get_signservice(signservice_name: str):
 
         try:
             sign_service = api_instance.list(name=signservice_name).results[0]
-            print(f"sign service: found {signservice_name}")
+            msg = f"found {signservice_name}"
+            mlogger.info(msg)
             return sign_service
 
         except ApiException as err:
-            print("Exception when calling SigningServicesApi->list: %s\n" % err)
+            msg = f"Exception when calling SigningServicesApi->list: {err}"
+            mlogger.error(msg)
             raise

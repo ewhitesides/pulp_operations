@@ -1,11 +1,16 @@
 """repository functions"""
 
+import logging
 import pulpcore.client.pulp_rpm
 from pulpcore.client.pulp_rpm.rest import ApiException
 from pulp_operations.api_client_conf import rpm_configuration
 from pulp_operations.signing import get_signservice
 from pulp_operations.task import wait_for_task_complete, get_task_created_resource
 
+#module logger - child of parent logger 'pulp_operations'
+mlogger = logging.getLogger('pulp_operations.repository')
+
+#functions
 def get_repo(repo_name: str):
     """
     Summary:
@@ -26,11 +31,13 @@ def get_repo(repo_name: str):
 
         try:
             repository = api_instance.list(name=repo_name).results[0]
-            print(f"repository: found {repo_name}")
+            msg = f"found {repo_name}"
+            mlogger.info(msg)
             return repository
 
         except ApiException as err:
-            print("Exception when calling RepositoriesRpmApi->list: %s\n" % err)
+            msg = f"Exception when calling RepositoriesRpmApi->list: {err}"
+            mlogger.error(msg)
             raise
 
 def create_repo(repo_name: str, signservice_name: str = None):
@@ -68,11 +75,15 @@ def create_repo(repo_name: str, signservice_name: str = None):
                         'retain_package_versions': 10, #default is 0 (unlimited)
                     }
                 )
-            print(f"repository: created {repo_name}")
+
+            msg = f"created {repo_name}"
+            mlogger.info(msg)
+
             return repository
 
         except ApiException as err:
-            print("Exception when calling RepositoriesRpmApi->create: %s\n" % err)
+            msg = f"Exception when calling RepositoriesRpmApi->create: {err}"
+            mlogger.error(msg)
             raise
 
 def sync_repo(repository, remote):
@@ -110,20 +121,26 @@ def sync_repo(repository, remote):
             )
 
             #wait for task to complete. if sync caused a change, it will create a repoversion_href
-            wait_for_task_complete(task_href=sync_task.task)
+            wait_for_task_complete(
+                task_name='sync',
+                task_href=sync_task.task
+            )
             repoversion_href = get_task_created_resource(task_href=sync_task.task)
 
-            #status message
+            #logging
             if repoversion_href:
-                print(f"updates found when syncing {repository.name} to {remote.name}")
+                msg = f"syncing {repository.name} to remote {remote.name} created a new version"
+                mlogger.info(msg)
             else:
-                print(f"no updates found when syncing {repository.name} to {remote.name}")
+                msg = f"no change when syncing {repository.name} to remote {remote.name}"
+                mlogger.info(msg)
 
             #output
             return repoversion_href
 
         except ApiException as err:
-            print("Exception when calling RepositoriesRpmApi->sync: %s\n" % err)
+            msg = f"Exception when calling RepositoriesRpmApi->sync: {err}"
+            mlogger.error(msg)
             raise
 
 def add_remove_file_repo(action: str, repository, content):
@@ -151,7 +168,9 @@ def add_remove_file_repo(action: str, repository, content):
             #check action values
             valid_action_values = ['add', 'remove']
             if action not in valid_action_values:
-                raise ValueError(f"action {action} is not valid")
+                msg = f"action parameter value '{action}' is not valid"
+                mlogger.error(msg)
+                raise ValueError(msg)
 
             #add
             if action == 'add':
@@ -172,18 +191,86 @@ def add_remove_file_repo(action: str, repository, content):
             )
 
             #wait for task to complete
-            wait_for_task_complete(task_href=file_task.task)
+            wait_for_task_complete(
+                task_name=f'{action} rpm',
+                task_href=file_task.task
+            )
             repoversion_href = get_task_created_resource(task_href=file_task.task)
 
-            #status message
+            #logging
             if repoversion_href:
-                print(f"{repository.name} has been changed")
+                msg = f"{action} rpm to {repository.name} created a new version"
+                mlogger.info(msg)
             else:
-                print(f"{repository.name} has not changed")
+                msg = f"no change after rpm {action} on {repository.name}"
+                mlogger.info(msg)
 
             #output
             return repoversion_href
 
         except ApiException as err:
-            print("Exception when calling RepositoriesRpmApi->modify: %s\n" % err)
+            msg = f"Exception when calling RepositoriesRpmApi->modify: {err}"
+            mlogger.error(msg)
+            raise
+
+def list_repo():
+    """
+    Summary:
+        lists all repos
+
+    Parameters:
+        none
+
+    Returns:
+        list of repos
+    """
+
+    #Enter a context with an instance of the API client
+    with pulpcore.client.pulp_rpm.ApiClient(rpm_configuration) as api_client:
+
+        #Create an instance of the API class
+        api_instance = pulpcore.client.pulp_rpm.RepositoriesRpmApi(api_client)
+
+        try:
+            output = api_instance.list()
+            return output
+        except ApiException as err:
+            msg = f"Exception when calling RepositoriesRpmApi->list: {err}"
+            mlogger.error(msg)
+            raise
+
+def delete_repo(repository):
+    """
+    Summary:
+        deletes an existing repository
+
+    Parameters:
+        repository: the repository object
+
+    Returns:
+        None
+    """
+
+    #Enter a context with an instance of the API client
+    with pulpcore.client.pulp_rpm.ApiClient(rpm_configuration) as api_client:
+
+        #Create an instance of the API class
+        api_instance = pulpcore.client.pulp_rpm.RepositoriesRpmApi(api_client)
+
+        try:
+            repository_task = api_instance.delete(
+                rpm_rpm_repository_href = repository.pulp_href
+            )
+
+            wait_for_task_complete(
+                task_name='delete repository',
+                task_href=repository_task.task
+            )
+
+            msg = f"deleted {repository.name}"
+            mlogger.info(msg)
+
+        except ApiException as err:
+            msg = f"Exception when calling RepositoriesRpmApi->delete: {err}"
+            mlogger.error(msg)
             raise

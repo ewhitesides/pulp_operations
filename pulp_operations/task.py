@@ -2,9 +2,13 @@
 
 import time
 from timeit import default_timer as timer
+import logging
 import pulpcore.client.pulpcore
 from pulpcore.client.pulpcore.rest import ApiException
 from pulp_operations.api_client_conf import core_configuration
+
+#module logger - child of parent logger 'pulp_operations'
+mlogger = logging.getLogger('pulp_operations.task')
 
 def get_task_created_resource (task_href: str):
     """
@@ -36,20 +40,26 @@ def get_task_created_resource (task_href: str):
             return None
 
         except ApiException as err:
-            print("Exception when calling TasksApi->read: %s\n" % err)
+            msg = f"Exception when calling TasksApi->read: {err}"
+            mlogger.error(msg)
             raise
 
-def wait_for_task_complete (task_href: str):
+def wait_for_task_complete (task_name: str, task_href: str):
     """
     Summary:
         polls a task state and returns when the task is complete
 
     Parameters:
+        task_name (str): the name of the task
         task_href (str): the href for the task
 
     Returns:
         None
     """
+
+    #logging
+    msg = f"waiting for '{task_name}' to complete"
+    mlogger.info(msg)
 
     #Enter a context with an instance of the API client
     with pulpcore.client.pulpcore.ApiClient(core_configuration) as api_client:
@@ -59,30 +69,37 @@ def wait_for_task_complete (task_href: str):
 
         #start time
         start = timer()
+        elapsed_wait = 0
+        max_wait = 1200 #20 minutes. tasks should only take 1-2 minutes.
 
         #poll task until it is finished
-        while True:
+        while elapsed_wait < max_wait:
 
             try:
                 #get state
                 state = api_instance.read(task_href).state
 
+                #mark elapsed time
+                end = timer()
+                elapsed_wait = int(end - start)
+
                 #state is completed
                 if state in ['completed']:
+                    msg = f"{task_name} {state} in {elapsed_wait} seconds"
+                    mlogger.info(msg)
                     return
 
                 #state is failed/canceled
                 if state in ['failed', 'canceled']:
-                    class TaskStateException(Exception):
-                        """custom exception to raise when task is failed/canceled"""
-                    raise TaskStateException(f"task {task_href} is {state}")
+                    class TaskStateException(Exception): """custom exception"""
+                    msg = f"{task_name} {state} in {elapsed_wait} seconds"
+                    mlogger.error(msg)
+                    raise TaskStateException(msg)
 
-                #state is something else
-                end = timer()
-                elapsed_seconds = int(end - start)
-                print(f"waiting for task to complete. elapsed seconds: {elapsed_seconds}")
+                #state is not completed/failed/canceled
                 time.sleep(5)
 
             except ApiException as err:
-                print("Exception when calling TasksApi->read: %s\n" % err)
+                msg = f"Exception when calling TasksApi->read: {err}"
+                mlogger.error(msg)
                 raise

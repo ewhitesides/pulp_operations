@@ -6,3 +6,12 @@ devcontainer.env
 
 # Test RPM files
 *.rpm
+
+# Virtual env
+/venv/
+
+# Direnv .envrc
+.envrc
+
+# this changes based on if you are in venv or container, so ignoring
+.vscode/settings.json

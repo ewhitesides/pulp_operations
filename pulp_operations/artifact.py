@@ -1,8 +1,12 @@
 """artifact functions"""
 
+import logging
 import pulpcore.client.pulpcore
 from pulpcore.client.pulpcore.rest import ApiException
 from pulp_operations.api_client_conf import core_configuration
+
+#module logger - child of parent logger 'pulp_operations'
+mlogger = logging.getLogger('pulp_operations.artifact')
 
 def get_artifact(sha256hash: str):
     """
@@ -24,11 +28,15 @@ def get_artifact(sha256hash: str):
 
         try:
             artifact = api_instance.list(sha256=sha256hash).results[0]
-            print("artifact found")
+
+            msg = "found"
+            mlogger.info(msg)
+
             return artifact
 
         except ApiException as err:
-            print("Exception when calling ArtifactsApi->list: %s\n" % err)
+            msg = f"Exception when calling ArtifactsApi->list: {err}"
+            mlogger.error(msg)
             raise
 
 def create_artifact(rpm_file: str):
@@ -51,9 +59,13 @@ def create_artifact(rpm_file: str):
 
         try:
             artifact = api_instance.create(file=rpm_file)
-            print("artifact created")
+
+            msg = "created"
+            mlogger.info(msg)
+
             return artifact
 
         except ApiException as err:
-            print("Exception when calling ArtifactsApi->create: %s\n" % err)
+            msg = f"Exception when calling ArtifactsApi->create: {err}"
+            mlogger.error(msg)
             raise

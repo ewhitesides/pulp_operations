@@ -1,9 +1,13 @@
 """content functions"""
 
+import logging
 import pulpcore.client.pulp_rpm
 from pulpcore.client.pulp_rpm.rest import ApiException
 from pulp_operations.api_client_conf import rpm_configuration
 from pulp_operations.task import wait_for_task_complete
+
+#module logger - child of parent logger 'pulp_operations'
+mlogger = logging.getLogger('pulp_operations.content')
 
 def get_content_by_properties(rpm_properties, repository):
     """
@@ -33,11 +37,15 @@ def get_content_by_properties(rpm_properties, repository):
                 repository_version = repository.latest_version_href
             )
             content = content_search.results[0]
-            print("content found")
+
+            msg = "found by properties"
+            mlogger.info(msg)
+
             return content
 
         except ApiException as err:
-            print("Exception when calling ContentPackagesApi->list: %s\n" % err)
+            msg = f"Exception when calling ContentPackagesApi->list: {err}"
+            mlogger.error(msg)
             raise
 
 def get_content_by_hash(sha256hash: str):
@@ -59,17 +67,21 @@ def get_content_by_hash(sha256hash: str):
 
         try:
             content = api_instance.list(sha256=sha256hash).results[0]
-            print("content found")
+
+            msg = "found by hash"
+            mlogger.info(msg)
+
             return content
 
         except ApiException as err:
-            print("Exception when calling ContentPackagesApi->list: %s\n" % err)
+            msg = f"Exception when calling ContentPackagesApi->list: {err}"
+            mlogger.error(msg)
             raise
 
 def create_content(artifact, rpm_file):
     """
     Summary:
-        creates content in repository using rpm sha256 hash
+        creates content using artifact and rpm_file
 
     Parameters:
         artifact (artifact object): artifact object
@@ -92,9 +104,16 @@ def create_content(artifact, rpm_file):
             )
 
             #wait for task to complete
-            wait_for_task_complete(task_href=content_task.task)
-            print("content created")
+            wait_for_task_complete(
+                task_name='create content',
+                task_href=content_task.task
+            )
+
+            #logging
+            msg = "created"
+            mlogger.info(msg)
 
         except ApiException as err:
-            print("Exception when calling ContentPackagesApi->create: %s\n" % err)
+            msg = f"Exception when calling ContentPackagesApi->create: {err}"
+            mlogger.error(msg)
             raise
