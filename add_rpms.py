@@ -1,5 +1,5 @@
 """
-high level script to call pulp_operations
+high level script to add rpms
 """
 import urllib3
 import pathlib
@@ -19,7 +19,7 @@ def main(repo_name: str):
         pulp_operations.add_rpm(
             rpm_file=str(rpm_file),
             repo_name=repo_name,
-            signservice_name='sign-metadata'
+            #signservice_name='sign-metadata' #optional
         )
 
     #release updated version of the repository to the distribution
