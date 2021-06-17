@@ -1,143 +1,106 @@
-# reference info
+# README
 
-## example commands
+## setup
+
+```bash
+#clone/pull repo
+git clone git@github.com:ewhitesides/pulp_operations.git
+
+#setup the virtual environment
+pip3 install virtualenv
+cd pulp_operations
+virtualenv .venv
+.venv/bin/pip install .
+
+#add the following to pulp_operations/.env
+PULP_USER=<user>
+PULP_PASS=<password>
+PULP_SERVER=<server>
+
+#activate virtual environment with below command
+source .venv/bin/activate
+```
+
+## examples
+
+### sync_repo.py
+
+runs all the necessary steps to sync repositories using data from repo_data.py
+
+### distribute_repo.py
+
+runs all the necessary steps to distribute latest version of repositories using data from repo_data.py
+
+### example cron to schedule sync_repo.py, distribute_repo.py
+
+```bash
+#sync repos daily at 3:30am
+30 3 * * * /root/pulp_operations_venv/bin/python /root/pulp_operations_code/sync_repo.py
+
+#distribute repos biweekly sunday at 4:30am
+30 4 * * 7 /root/pulp_operations_venv/bin/python /root/pulp_operations_code/distribute_repo.py
+```
+
+### add_rpms.py
+
+```bash
+#if the repo_name does not exist, it will be created 
+#copy rpm files to same folder level as add_rpms.py, 
+#then run add_rpms.py
+python add_rpms.py --repo_name signed-r8-myrepo
+```
+
+### remove a rpm from a repository
 
 ```python
+import urllib3
 import pulp_operations
 
-#optionally disable ssl warnings
-import urllib3
+#disable ssl
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-#syncing to repository
-#'start_sync' creates a '{repo_name}-dev_dist' and a '{repo_name}-prod_dist' distribution
-#dev_dist reflects the latest version of the repository
-#prod_dist reflects the previous version of the repository
-#this allows test/dev servers to receive the latest updates first for testing
-pulp_operations.start_sync(
-    repo_name='test-repo',
-    remote_name='test-remote',
-    remote_url='https://mirror.cs.uwp.edu/pub/centos/8/PowerTools/x86_64/os/',
-)
-
-#adding a rpm to a repository
-pulp_operations.add_rpm(
-    rpm_file='snake-0.11-0.20.el6.noarch.rpm',
-    repo_name='test-repo',
-    dist_name='test-dist'
-)
-
-#removing a rpm from a repository
+#remove rpm from repository
 pulp_operations.remove_rpm(
     rpm_file='snake-server-0.11-0.20.el6.noarch.rpm',
-    repo_name='test-repo',
-    dist_name='test-dist'
+    repo_name='test-repo'
 )
 
-#syncing multiple remotes to one repository
-#useful for either merging multiple remotes into one single repository
-#or you can use multiple of the same remote as backup if one fails
-pulp_operations.start_sync(
-    repo_name='repo_centos8',
-    remote_name='remote_centos8_base',
-    remote_url='https://mirror.cs.uwp.edu/pub/centos/8/BaseOS/x86_64/os/',
+#release updated version of the repository to the distribution
+pulp_operations.release(
+    repo_name='my_pulp_repository',
+    version_rollback=0,
+    dist_name='latest'
 )
+```
 
-pulp_operations.start_sync(
-    repo_name='repo_centos8',
-    remote_name='remote_centos8_powertools',
-    remote_url='https://mirror.cs.uwp.edu/pub/centos/8/PowerTools/x86_64/os/',
+### rolling back to the previous version of a repository
+
+```python
+import urllib3
+import pulp_operations
+
+#disable ssl
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+pulp_operations.release(
+    repo_name='my_pulp_repository',
+    version_rollback=1,
+    dist_name='my_pulp_distribution'
 )
+```
 
-#syncing/adding to a repository with signed repodata
-#signing service requires preparation on server before use
-pulp_operations.start_sync(
-    repo_name='signtest-repo',
-    remote_name='signtest-remote',
-    remote_url='https://mirror.cs.uwp.edu/pub/centos/8/PowerTools/x86_64/os/',
-    signservice_name='sign-metadata'
-)
+### other management commands
 
-#adding to a repository with signed repodata
-pulp_operations.add_rpm(
-    rpm_file='snake-server-0.11-0.20.el6.noarch.rpm',
-    repo_name='signtest-repo',
-    dist_name='signtest-dist',
-    signservice_name='sign-metadata'
-)
+```python
+import urllib3
+import pulp_operations
 
-#adding all rpms that match pattern in directory to a repository
-import pathlib
-for rpm_file in pathlib.Path('.').glob('*.rpm'):
-    pulp_operations.add_rpm(
-        rpm_file=str(rpm_file),
-        repo_name='signtest-repo',
-        dist_name='signetest-dist',
-        signservice_name='sign-metadata'
-    )
-
-#examples of processing entire groups of repositories using a dictionary data structure
-
-#CentOS 7
-config_centos_7 = {
-    'c7_os': {
-        'umd': 'https://mirror.umd.edu/centos/7/os/x86_64',
-        'uwp': 'https://mirror.cs.uwp.edu/pub/centos/7/os/x86_64'
-    },
-    'c7_updates': {
-        'umd': 'https://mirror.umd.edu/centos/7/updates/x86_64',
-        'uwp': 'https://mirror.cs.uwp.edu/pub/centos/7/updates/x86_64'
-    },
-    'c7_extras': {
-        'umd': 'https://mirror.umd.edu/centos/7/extras/x86_64',
-        'uwp': 'https://mirror.cs.uwp.edu/pub/centos/7/extras/x86_64'
-    },
-    'c7_epel': {
-        'umd': 'https://mirror.umd.edu/fedora/epel/7/x86_64/'
-    }
-}
-for repo in config_centos_7:
-    for remote_name, remote_url in config_centos_7[repo].items():
-        pulp_operations.start_sync(
-            repo_name=f"signed-{repo}",
-            remote_name=f"{repo}-{remote_name}",
-            remote_url=remote_url,
-            signservice_name='sign-metadata'
-        )
-
-#CentOS 8
-config_centos_8 = {
-    'c8_appstream': {
-        'umd': 'https://mirror.umd.edu/centos/8/AppStream/x86_64/os/',
-        'uwp': 'https://mirror.cs.uwp.edu/pub/centos/8/AppStream/x86_64/os/'
-    },
-    'c8_baseos': {
-        'umd': 'https://mirror.umd.edu/centos/8/BaseOS/x86_64/os/',
-        'uwp': 'https://mirror.cs.uwp.edu/pub/centos/8/BaseOS/x86_64/os/'
-    },
-    'c8_extras': {
-        'umd': 'https://mirror.umd.edu/centos/8/extras/x86_64/os/',
-        'uwp': 'https://mirror.cs.uwp.edu/pub/centos/8/extras/x86_64/os/'
-    },
-    'c8_powertools': {
-        'umd': 'https://mirror.umd.edu/centos/8/PowerTools/x86_64/os/',
-        'uwp': 'https://mirror.cs.uwp.edu/pub/centos/8/PowerTools/x86_64/os/'
-    },
-    'c8_epel_everything': {
-        'umd': 'https://mirror.umd.edu/fedora/epel/8/Everything/x86_64/'
-    }
-}
-for repo in config_centos_8:
-    for remote_name, remote_url in config_centos_8[repo].items():
-        pulp_operations.start_sync(
-            repo_name=f"signed-{repo}",
-            remote_name=f"{repo}-{remote_name}",
-            remote_url=remote_url,
-            signservice_name='sign-metadata'
-        )
+#disable ssl
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 #general repository operations
-pulp_operations.repository.list_repo()
+pulp_operations.list_repository_names() #list all repository names
+pulp_operations.repository.list_repo() #list all properties of all repositories
 pulp_operations.remove_repository('test-repo')
 
 #general remote operations
@@ -148,31 +111,35 @@ pulp_operations.remove_remote('test-remote')
 pulp_operations.publication.list_publication()
 
 #general distribution operations
-pulp_operations.distribution.list_distribution()
+pulp_operations.list_distribution_names() #list all distribution names
+pulp_operations.distribution.list_distribution() #list all properties of all distributions
 pulp_operations.distribution.get_distribution_url('test-dist')
 pulp_operations.remove_distribution('test-dist')
 ```
 
-## logging
+## finding repositories to sync from
 
-pulp_operations logs to /var/log/pulp_operations.log at DEBUG level, and to console at INFO level
+### standard repos
 
-a new log file will be created once a day, and will automatically prune after 30 log files.
+find repos by going to mirrorlist.centos.org and filling in params
+example: <http://mirrorlist.centos.org/?release=8&arch=x86_64&repo=AppStream>
+note the structure of the url - some sites include a 'pub' or 'linux' directory
+that prefixes the standardized format
 
-## development: container-based environment
+### epel repos
 
-```bash
-#the following assumes your machine has docker desktop and vscode installed
-cd ~
-git clone <repo>
-cd pulp_operations/.devcontainer
+for searching for epel, use the following, and view the contents of the downloaded metalink file
+example: <https://mirrors.fedoraproject.org/metalink?repo=epel-modular-8&arch=x86_64>
+example: <https://mirrors.fedoraproject.org/metalink?repo=epel-8&arch=x86_64&>
 
-#add the following to devcontainer.env
-PULP_USER=admin
-PULP_PASS=<password from install.yml>
-PULP_SERVER=<server from install.yml>
+## reference links
 
-#launch in vscode as a container
-#press F5 to run 'run_examples.py' script
-#go into code and press F9 to create a breakpoint
-```
+<https://pulpcore-client.readthedocs.io/en/latest/>
+
+<https://pulp-rpm.readthedocs.io/en/latest/>
+
+<https://timber.io/blog/the-pythonic-guide-to-logging/>
+
+<https://docs.python.org/3/howto/logging-cookbook.html#logging-cookbook>
+
+<https://pulp-rpm.readthedocs.io/en/latest/workflows/metadata_signing.html>

@@ -1,6 +1,7 @@
 """repository functions"""
 
 import logging
+import pathlib
 import pulpcore.client.pulp_rpm
 from pulpcore.client.pulp_rpm.rest import ApiException
 from pulp_operations.api_client_conf import rpm_configuration
@@ -39,6 +40,53 @@ def get_repo(repo_name: str):
             msg = f"Exception when calling RepositoriesRpmApi->list: {err}"
             mlogger.error(msg)
             raise
+
+def get_repoversion(latest_version_href: str, rollback: int = 0):
+    """
+    Summary:
+        returns the repoversion_href for the latest_version minus rollback
+
+        for example if a latest version is 7, and rollback is 1, it will
+        return version 6
+
+        if latest version minus rollback is less then or equal to 0, it will return version 1
+
+    Parameters:
+        latest_version_href (str): the latest version href of the repository
+        rollback (int): number of versions to rollback to
+
+    Returns:
+        repoversion_href string
+    """
+
+    #use pathlib to split out latest version of the repo from the href
+    pathed_latest_version_href = pathlib.Path(latest_version_href)
+    version_index = int(pathed_latest_version_href.parts.index('versions')) + 1
+    latest_version = pathed_latest_version_href.parts[version_index]
+
+    #selected version of repository is latest version minus rollback.
+    #publications can't be linked to anything less than 1.
+    output_version = int(latest_version) - rollback
+    if output_version <= 0:
+        output_version = 1
+
+    #build url with selected version
+    output = latest_version_href.replace(
+        f'/versions/{latest_version}/',
+        f'/versions/{output_version}/'
+    )
+
+    msg = f"latest version: {latest_version_href}"
+    mlogger.info(msg)
+
+    msg = f"rollback value: {rollback}"
+    mlogger.info(msg)
+
+    msg = f"using version: {output}"
+    mlogger.info(msg)
+
+    #output
+    return output
 
 def create_repo(repo_name: str, signservice_name: str = None):
     """
@@ -96,8 +144,7 @@ def sync_repo(repository, remote):
         remote (remote object): remote object
 
     Returns:
-        if the sync changes the repository, it will
-        output a new repoversion href
+        None
     """
 
     #Enter a context with an instance of the API client
@@ -135,9 +182,6 @@ def sync_repo(repository, remote):
                 msg = f"no change when syncing {repository.name} to remote {remote.name}"
                 mlogger.info(msg)
 
-            #output
-            return repoversion_href
-
         except ApiException as err:
             msg = f"Exception when calling RepositoriesRpmApi->sync: {err}"
             mlogger.error(msg)
@@ -154,8 +198,7 @@ def add_remove_file_repo(action: str, repository, content):
         content (content object): the content
 
     Returns:
-        if adding or remove a file changes the repository, it will
-        output a new repoversion href
+        None
     """
 
     #Enter a context with an instance of the API client
@@ -204,9 +247,6 @@ def add_remove_file_repo(action: str, repository, content):
             else:
                 msg = f"no change after rpm {action} on {repository.name}"
                 mlogger.info(msg)
-
-            #output
-            return repoversion_href
 
         except ApiException as err:
             msg = f"Exception when calling RepositoriesRpmApi->modify: {err}"

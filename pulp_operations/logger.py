@@ -7,8 +7,11 @@ import logging.handlers as handlers
 logger = logging.getLogger('pulp_operations')
 logger.setLevel(logging.DEBUG)
 
-#define format
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+#using this format so splunk picks up the fields automatically
+formatter = logging.Formatter(
+    fmt='Time="%(asctime)s", Module="%(name)s", Level="%(levelname)s", Message="%(message)s"',
+    datefmt="%Y-%m-%dT%H:%M:%S%z"
+)
 
 #define time-based rotating file handler
 fh = handlers.TimedRotatingFileHandler(

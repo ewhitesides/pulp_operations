@@ -1,0 +1,5 @@
+//these apply if you're using virtual env directly in linux or in dev container
+{
+    "python.pythonPath": ".venv/bin/python",
+    "python.terminal.activateEnvInCurrentTerminal": true
+}

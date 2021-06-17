@@ -67,10 +67,10 @@ def wait_for_task_complete (task_name: str, task_href: str):
         #Create an instance of the API class
         api_instance = pulpcore.client.pulpcore.TasksApi(api_client)
 
-        #start time
+        #limit time in case we ever encounter a situation where task hangs indefinitely
         start = timer()
         elapsed_wait = 0
-        max_wait = 1200 #20 minutes. tasks should only take 1-2 minutes.
+        max_wait = 3600 #60 minutes
 
         #poll task until it is finished
         while elapsed_wait < max_wait:
