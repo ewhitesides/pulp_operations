@@ -2,6 +2,7 @@
 .*
 !.gitignore
 !.vscode
+!.devcontainer
 
 #Test RPM files
 *.rpm
