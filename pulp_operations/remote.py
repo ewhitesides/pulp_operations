@@ -6,8 +6,9 @@ from pulpcore.client.pulp_rpm.rest import ApiException
 from pulp_operations.api_client_conf import rpm_configuration
 from pulp_operations.task import wait_for_task_complete
 
-#module logger - child of parent logger 'pulp_operations'
-mlogger = logging.getLogger('pulp_operations.remote')
+# module logger - child of parent logger 'pulp_operations'
+mlogger = logging.getLogger("pulp_operations.remote")
+
 
 def get_remote(remote_name: str):
     """
@@ -21,10 +22,10 @@ def get_remote(remote_name: str):
         remote response object
     """
 
-    #Enter a context with an instance of the API client
+    # Enter a context with an instance of the API client
     with pulpcore.client.pulp_rpm.ApiClient(rpm_configuration) as api_client:
 
-        #Create an instance of the API class
+        # Create an instance of the API class
         api_instance = pulpcore.client.pulp_rpm.RemotesRpmApi(api_client)
 
         try:
@@ -38,6 +39,7 @@ def get_remote(remote_name: str):
             mlogger.error(msg)
             raise
 
+
 def create_remote(remote_name: str, remote_url: str):
     """
     Summary:
@@ -50,18 +52,18 @@ def create_remote(remote_name: str, remote_url: str):
     Returns:
         remote response object
     """
-    #Enter a context with an instance of the API client
+    # Enter a context with an instance of the API client
     with pulpcore.client.pulp_rpm.ApiClient(rpm_configuration) as api_client:
 
-        #Create an instance of the API class
+        # Create an instance of the API class
         api_instance = pulpcore.client.pulp_rpm.RemotesRpmApi(api_client)
 
         try:
             remote = api_instance.create(
-                rpm_rpm_remote = {
-                    'name': remote_name,
-                    'url': remote_url,
-                    'policy': 'on_demand'
+                rpm_rpm_remote={
+                    "name": remote_name,
+                    "url": remote_url,
+                    "policy": "on_demand",
                 }
             )
 
@@ -75,6 +77,7 @@ def create_remote(remote_name: str, remote_url: str):
             mlogger.error(msg)
             raise
 
+
 def list_remote():
     """
     Summary:
@@ -87,10 +90,10 @@ def list_remote():
         list of remotes
     """
 
-    #Enter a context with an instance of the API client
+    # Enter a context with an instance of the API client
     with pulpcore.client.pulp_rpm.ApiClient(rpm_configuration) as api_client:
 
-        #Create an instance of the API class
+        # Create an instance of the API class
         api_instance = pulpcore.client.pulp_rpm.RemotesRpmApi(api_client)
 
         try:
@@ -100,6 +103,7 @@ def list_remote():
             msg = f"Exception when calling RemotesRpmApi->list: {err}"
             mlogger.error(msg)
             raise
+
 
 def delete_remote(remote):
     """
@@ -113,20 +117,17 @@ def delete_remote(remote):
         None
     """
 
-    #Enter a context with an instance of the API client
+    # Enter a context with an instance of the API client
     with pulpcore.client.pulp_rpm.ApiClient(rpm_configuration) as api_client:
 
-        #Create an instance of the API class
+        # Create an instance of the API class
         api_instance = pulpcore.client.pulp_rpm.RemotesRpmApi(api_client)
 
         try:
-            remote_task = api_instance.delete(
-                rpm_rpm_remote_href = remote.pulp_href
-            )
+            remote_task = api_instance.delete(rpm_rpm_remote_href=remote.pulp_href)
 
             wait_for_task_complete(
-                task_name='delete remote',
-                task_href=remote_task.task
+                task_name="delete remote", task_href=remote_task.task
             )
 
             msg = f"deleted {remote.name}"

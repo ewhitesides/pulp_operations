@@ -2,6 +2,7 @@
 
 import hashlib
 
+
 def get_sha256hash(input_file: str):
     """
     Summary:
@@ -15,9 +16,10 @@ def get_sha256hash(input_file: str):
     """
 
     with open(input_file, "rb") as file:
-        file_bytes = file.read() #read entire file as bytes
+        file_bytes = file.read()  # read entire file as bytes
         output = hashlib.sha256(file_bytes).hexdigest()
         return output
+
 
 def get_rpm_properties(input_file: str):
     """
@@ -32,19 +34,14 @@ def get_rpm_properties(input_file: str):
         dictionary containing arch, release, version, and name
     """
 
-    #get properties from rpm_file name
-    arch = input_file.rsplit('.', 2)[1]
-    release = input_file.rsplit('.', 2)[0].rsplit('-', 1)[1]
-    version = input_file.rsplit('.', 2)[0].rsplit('-', 1)[0].rsplit('-', 1)[1]
-    name = input_file.rsplit('.', 2)[0].rsplit('-', 1)[0].rsplit('-', 1)[0]
+    # get properties from rpm_file name
+    arch = input_file.rsplit(".", 2)[1]
+    release = input_file.rsplit(".", 2)[0].rsplit("-", 1)[1]
+    version = input_file.rsplit(".", 2)[0].rsplit("-", 1)[0].rsplit("-", 1)[1]
+    name = input_file.rsplit(".", 2)[0].rsplit("-", 1)[0].rsplit("-", 1)[0]
 
-    #put into dictionary
-    output = {
-        'arch': arch,
-        'release': release,
-        'version': version,
-        'name': name
-    }
+    # put into dictionary
+    output = {"arch": arch, "release": release, "version": version, "name": name}
 
-    #output
+    # output
     return output

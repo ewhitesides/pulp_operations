@@ -5,8 +5,9 @@ import pulpcore.client.pulpcore
 from pulpcore.client.pulpcore.rest import ApiException
 from pulp_operations.api_client_conf import core_configuration
 
-#module logger - child of parent logger 'pulp_operations'
-mlogger = logging.getLogger('pulp_operations.artifact')
+# module logger - child of parent logger 'pulp_operations'
+mlogger = logging.getLogger("pulp_operations.artifact")
+
 
 def get_artifact(sha256hash: str):
     """
@@ -20,10 +21,10 @@ def get_artifact(sha256hash: str):
         artifact response object
     """
 
-    #Enter a context with an instance of the API client
+    # Enter a context with an instance of the API client
     with pulpcore.client.pulpcore.ApiClient(core_configuration) as api_client:
 
-        #Create an instance of the API class
+        # Create an instance of the API class
         api_instance = pulpcore.client.pulpcore.ArtifactsApi(api_client)
 
         try:
@@ -39,6 +40,7 @@ def get_artifact(sha256hash: str):
             mlogger.error(msg)
             raise
 
+
 def create_artifact(rpm_file: str):
     """
     Summary:
@@ -51,10 +53,10 @@ def create_artifact(rpm_file: str):
         artifact response object
     """
 
-    #Enter a context with an instance of the API client
+    # Enter a context with an instance of the API client
     with pulpcore.client.pulpcore.ApiClient(core_configuration) as api_client:
 
-        #Create an instance of the API class
+        # Create an instance of the API class
         api_instance = pulpcore.client.pulpcore.ArtifactsApi(api_client)
 
         try:

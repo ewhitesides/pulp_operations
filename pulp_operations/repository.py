@@ -8,10 +8,10 @@ from pulp_operations.api_client_conf import rpm_configuration
 from pulp_operations.signing import get_signservice
 from pulp_operations.task import wait_for_task_complete, get_task_created_resource
 
-#module logger - child of parent logger 'pulp_operations'
-mlogger = logging.getLogger('pulp_operations.repository')
+# module logger - child of parent logger 'pulp_operations'
+mlogger = logging.getLogger("pulp_operations.repository")
 
-#functions
+# functions
 def get_repo(repo_name: str):
     """
     Summary:
@@ -24,10 +24,10 @@ def get_repo(repo_name: str):
         repository response object
     """
 
-    #Enter a context with an instance of the API client
+    # Enter a context with an instance of the API client
     with pulpcore.client.pulp_rpm.ApiClient(rpm_configuration) as api_client:
 
-        #Create an instance of the API class
+        # Create an instance of the API class
         api_instance = pulpcore.client.pulp_rpm.RepositoriesRpmApi(api_client)
 
         try:
@@ -40,6 +40,7 @@ def get_repo(repo_name: str):
             msg = f"Exception when calling RepositoriesRpmApi->list: {err}"
             mlogger.error(msg)
             raise
+
 
 def get_repoversion(latest_version_href: str, rollback: int = 0):
     """
@@ -59,21 +60,20 @@ def get_repoversion(latest_version_href: str, rollback: int = 0):
         repoversion_href string
     """
 
-    #use pathlib to split out latest version of the repo from the href
+    # use pathlib to split out latest version of the repo from the href
     pathed_latest_version_href = pathlib.Path(latest_version_href)
-    version_index = int(pathed_latest_version_href.parts.index('versions')) + 1
+    version_index = int(pathed_latest_version_href.parts.index("versions")) + 1
     latest_version = pathed_latest_version_href.parts[version_index]
 
-    #selected version of repository is latest version minus rollback.
-    #publications can't be linked to anything less than 1.
+    # selected version of repository is latest version minus rollback.
+    # publications can't be linked to anything less than 1.
     output_version = int(latest_version) - rollback
     if output_version <= 0:
         output_version = 1
 
-    #build url with selected version
+    # build url with selected version
     output = latest_version_href.replace(
-        f'/versions/{latest_version}/',
-        f'/versions/{output_version}/'
+        f"/versions/{latest_version}/", f"/versions/{output_version}/"
     )
 
     msg = f"latest version: {latest_version_href}"
@@ -85,8 +85,9 @@ def get_repoversion(latest_version_href: str, rollback: int = 0):
     msg = f"using version: {output}"
     mlogger.info(msg)
 
-    #output
+    # output
     return output
+
 
 def create_repo(repo_name: str, signservice_name: str = None):
     """
@@ -100,27 +101,27 @@ def create_repo(repo_name: str, signservice_name: str = None):
         repository response object
     """
 
-    #Enter a context with an instance of the API client
+    # Enter a context with an instance of the API client
     with pulpcore.client.pulp_rpm.ApiClient(rpm_configuration) as api_client:
 
-        #Create an instance of the API class
+        # Create an instance of the API class
         api_instance = pulpcore.client.pulp_rpm.RepositoriesRpmApi(api_client)
 
         try:
             if signservice_name:
                 signservice = get_signservice(signservice_name)
                 repository = api_instance.create(
-                    rpm_rpm_repository = {
-                        'name': repo_name,
-                        'retain_package_versions': 10, #default is 0 (unlimited)
-                        'metadata_signing_service': signservice.pulp_href
+                    rpm_rpm_repository={
+                        "name": repo_name,
+                        "retain_package_versions": 10,  # default is 0 (unlimited)
+                        "metadata_signing_service": signservice.pulp_href,
                     }
                 )
             else:
                 repository = api_instance.create(
-                    rpm_rpm_repository = {
-                        'name': repo_name,
-                        'retain_package_versions': 10, #default is 0 (unlimited)
+                    rpm_rpm_repository={
+                        "name": repo_name,
+                        "retain_package_versions": 10,  # default is 0 (unlimited)
                     }
                 )
 
@@ -133,6 +134,7 @@ def create_repo(repo_name: str, signservice_name: str = None):
             msg = f"Exception when calling RepositoriesRpmApi->create: {err}"
             mlogger.error(msg)
             raise
+
 
 def sync_repo(repository, remote):
     """
@@ -147,45 +149,43 @@ def sync_repo(repository, remote):
         None
     """
 
-    #Enter a context with an instance of the API client
+    # Enter a context with an instance of the API client
     with pulpcore.client.pulp_rpm.ApiClient(rpm_configuration) as api_client:
 
-        #Create an instance of the API class
+        # Create an instance of the API class
         api_instance = pulpcore.client.pulp_rpm.RepositoriesRpmApi(api_client)
 
         try:
-            #sync url object
+            # sync url object
             sync_url_object = pulpcore.client.pulp_rpm.RpmRepositorySyncURL(
-                remote=remote.pulp_href,
-                optimize=True,
-                mirror=False
+                remote=remote.pulp_href, optimize=True, mirror=False
             )
 
-            #sync task
+            # sync task
             sync_task = api_instance.sync(
-                rpm_rpm_repository_href = repository.pulp_href,
-                rpm_repository_sync_url = sync_url_object
+                rpm_rpm_repository_href=repository.pulp_href,
+                rpm_repository_sync_url=sync_url_object,
             )
 
-            #wait for task to complete. if sync caused a change, it will create a repoversion_href
-            wait_for_task_complete(
-                task_name='sync',
-                task_href=sync_task.task
-            )
+            # wait for task to complete. if sync caused a change, it will create a repoversion_href
+            wait_for_task_complete(task_name="sync", task_href=sync_task.task)
             repoversion_href = get_task_created_resource(task_href=sync_task.task)
 
-            #logging
+            # logging
             if repoversion_href:
                 msg = f"syncing {repository.name} to remote {remote.name} created a new version"
                 mlogger.info(msg)
             else:
-                msg = f"no change when syncing {repository.name} to remote {remote.name}"
+                msg = (
+                    f"no change when syncing {repository.name} to remote {remote.name}"
+                )
                 mlogger.info(msg)
 
         except ApiException as err:
             msg = f"Exception when calling RepositoriesRpmApi->sync: {err}"
             mlogger.error(msg)
             raise
+
 
 def add_remove_file_repo(action: str, repository, content):
     """
@@ -201,46 +201,47 @@ def add_remove_file_repo(action: str, repository, content):
         None
     """
 
-    #Enter a context with an instance of the API client
+    # Enter a context with an instance of the API client
     with pulpcore.client.pulp_rpm.ApiClient(rpm_configuration) as api_client:
 
-        #Create an instance of the API class
+        # Create an instance of the API class
         api_instance = pulpcore.client.pulp_rpm.RepositoriesRpmApi(api_client)
 
         try:
-            #check action values
-            valid_action_values = ['add', 'remove']
+            # check action values
+            valid_action_values = ["add", "remove"]
             if action not in valid_action_values:
                 msg = f"action parameter value '{action}' is not valid"
                 mlogger.error(msg)
                 raise ValueError(msg)
 
-            #add
-            if action == 'add':
-                add_remove_content_object = pulpcore.client.pulp_rpm.RepositoryAddRemoveContent(
-                    add_content_units = [content.pulp_href]
+            # add
+            if action == "add":
+                add_remove_content_object = (
+                    pulpcore.client.pulp_rpm.RepositoryAddRemoveContent(
+                        add_content_units=[content.pulp_href]
+                    )
                 )
 
-            #remove
+            # remove
             else:
-                add_remove_content_object = pulpcore.client.pulp_rpm.RepositoryAddRemoveContent(
-                    remove_content_units = [content.pulp_href]
+                add_remove_content_object = (
+                    pulpcore.client.pulp_rpm.RepositoryAddRemoveContent(
+                        remove_content_units=[content.pulp_href]
+                    )
                 )
 
-            #task
+            # task
             file_task = api_instance.modify(
-                rpm_rpm_repository_href = repository.pulp_href,
-                repository_add_remove_content = add_remove_content_object
+                rpm_rpm_repository_href=repository.pulp_href,
+                repository_add_remove_content=add_remove_content_object,
             )
 
-            #wait for task to complete
-            wait_for_task_complete(
-                task_name=f'{action} rpm',
-                task_href=file_task.task
-            )
+            # wait for task to complete
+            wait_for_task_complete(task_name=f"{action} rpm", task_href=file_task.task)
             repoversion_href = get_task_created_resource(task_href=file_task.task)
 
-            #logging
+            # logging
             if repoversion_href:
                 msg = f"{action} rpm to {repository.name} created a new version"
                 mlogger.info(msg)
@@ -252,6 +253,7 @@ def add_remove_file_repo(action: str, repository, content):
             msg = f"Exception when calling RepositoriesRpmApi->modify: {err}"
             mlogger.error(msg)
             raise
+
 
 def list_repo():
     """
@@ -265,10 +267,10 @@ def list_repo():
         list of repos
     """
 
-    #Enter a context with an instance of the API client
+    # Enter a context with an instance of the API client
     with pulpcore.client.pulp_rpm.ApiClient(rpm_configuration) as api_client:
 
-        #Create an instance of the API class
+        # Create an instance of the API class
         api_instance = pulpcore.client.pulp_rpm.RepositoriesRpmApi(api_client)
 
         try:
@@ -278,6 +280,7 @@ def list_repo():
             msg = f"Exception when calling RepositoriesRpmApi->list: {err}"
             mlogger.error(msg)
             raise
+
 
 def delete_repo(repository):
     """
@@ -291,20 +294,19 @@ def delete_repo(repository):
         None
     """
 
-    #Enter a context with an instance of the API client
+    # Enter a context with an instance of the API client
     with pulpcore.client.pulp_rpm.ApiClient(rpm_configuration) as api_client:
 
-        #Create an instance of the API class
+        # Create an instance of the API class
         api_instance = pulpcore.client.pulp_rpm.RepositoriesRpmApi(api_client)
 
         try:
             repository_task = api_instance.delete(
-                rpm_rpm_repository_href = repository.pulp_href
+                rpm_rpm_repository_href=repository.pulp_href
             )
 
             wait_for_task_complete(
-                task_name='delete repository',
-                task_href=repository_task.task
+                task_name="delete repository", task_href=repository_task.task
             )
 
             msg = f"deleted {repository.name}"

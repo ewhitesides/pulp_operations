@@ -6,8 +6,9 @@ from pulpcore.client.pulp_rpm.rest import ApiException
 from pulp_operations.api_client_conf import rpm_configuration
 from pulp_operations.task import wait_for_task_complete
 
-#module logger - child of parent logger 'pulp_operations'
-mlogger = logging.getLogger('pulp_operations.distribution')
+# module logger - child of parent logger 'pulp_operations'
+mlogger = logging.getLogger("pulp_operations.distribution")
+
 
 def get_distribution_url(dist_name: str):
     """
@@ -25,6 +26,7 @@ def get_distribution_url(dist_name: str):
     msg = f"{dist_name} url is {distribution.base_url}"
     mlogger.info(msg)
 
+
 def get_distribution(dist_name: str):
     """
     Summary:
@@ -37,10 +39,10 @@ def get_distribution(dist_name: str):
         distribution response object
     """
 
-    #Enter a context with an instance of the API client
+    # Enter a context with an instance of the API client
     with pulpcore.client.pulp_rpm.ApiClient(rpm_configuration) as api_client:
 
-        #Create an instance of the API class
+        # Create an instance of the API class
         api_instance = pulpcore.client.pulp_rpm.DistributionsRpmApi(api_client)
 
         try:
@@ -53,6 +55,7 @@ def get_distribution(dist_name: str):
             msg = f"Exception when calling DistributionsRpmApi->list: {err}"
             mlogger.error(msg)
             raise
+
 
 def update_distribution(distribution, publication_href: str):
     """
@@ -67,30 +70,29 @@ def update_distribution(distribution, publication_href: str):
         None
     """
 
-    #Enter a context with an instance of the API client
+    # Enter a context with an instance of the API client
     with pulpcore.client.pulp_rpm.ApiClient(rpm_configuration) as api_client:
 
-        #Create an instance of the API class
+        # Create an instance of the API class
         api_instance = pulpcore.client.pulp_rpm.DistributionsRpmApi(api_client)
 
         try:
-            #update distribution
+            # update distribution
             distribution_task = api_instance.update(
                 rpm_rpm_distribution_href=distribution.pulp_href,
                 rpm_rpm_distribution={
-                    'name': distribution.name,
-                    'publication': publication_href,
-                    'base_path': distribution.name #was repository.name
-                }
+                    "name": distribution.name,
+                    "publication": publication_href,
+                    "base_path": distribution.name,  # was repository.name
+                },
             )
 
-            #wait for task to complete
+            # wait for task to complete
             wait_for_task_complete(
-                task_name='update distribution',
-                task_href=distribution_task.task
+                task_name="update distribution", task_href=distribution_task.task
             )
 
-            #output
+            # output
             msg = f"updated {distribution.name}"
             mlogger.info(msg)
 
@@ -101,6 +103,7 @@ def update_distribution(distribution, publication_href: str):
             msg = f"Exception when calling DistributionsRpmApi->update: {err}"
             mlogger.error(msg)
             raise
+
 
 def create_distribution(dist_name: str, publication_href: str):
     """
@@ -114,29 +117,28 @@ def create_distribution(dist_name: str, publication_href: str):
     Returns:
         None
     """
-    #Enter a context with an instance of the API client
+    # Enter a context with an instance of the API client
     with pulpcore.client.pulp_rpm.ApiClient(rpm_configuration) as api_client:
 
-        #Create an instance of the API class
+        # Create an instance of the API class
         api_instance = pulpcore.client.pulp_rpm.DistributionsRpmApi(api_client)
 
         try:
-            #create distribution
+            # create distribution
             distribution_task = api_instance.create(
                 rpm_rpm_distribution={
-                    'name': dist_name,
-                    'publication': publication_href,
-                    'base_path': dist_name #was repository.name
+                    "name": dist_name,
+                    "publication": publication_href,
+                    "base_path": dist_name,  # was repository.name
                 }
             )
 
-            #wait for task to complete
+            # wait for task to complete
             wait_for_task_complete(
-                task_name='create distribution',
-                task_href=distribution_task.task
+                task_name="create distribution", task_href=distribution_task.task
             )
 
-            #logging
+            # logging
             msg = f"created {dist_name}"
             mlogger.info(msg)
 
@@ -147,6 +149,7 @@ def create_distribution(dist_name: str, publication_href: str):
             msg = f"Exception when calling DistributionsRpmApi->create: {err}"
             mlogger.error(msg)
             raise
+
 
 def list_distribution():
     """
@@ -160,10 +163,10 @@ def list_distribution():
         list of distributions
     """
 
-    #Enter a context with an instance of the API client
+    # Enter a context with an instance of the API client
     with pulpcore.client.pulp_rpm.ApiClient(rpm_configuration) as api_client:
 
-        #Create an instance of the API class
+        # Create an instance of the API class
         api_instance = pulpcore.client.pulp_rpm.DistributionsRpmApi(api_client)
 
         try:
@@ -173,6 +176,7 @@ def list_distribution():
             msg = f"Exception when calling DistributionsRpmApi->list: {err}"
             mlogger.error(msg)
             raise
+
 
 def delete_distribution(distribution):
     """
@@ -186,20 +190,19 @@ def delete_distribution(distribution):
         None
     """
 
-    #Enter a context with an instance of the API client
+    # Enter a context with an instance of the API client
     with pulpcore.client.pulp_rpm.ApiClient(rpm_configuration) as api_client:
 
-        #Create an instance of the API class
+        # Create an instance of the API class
         api_instance = pulpcore.client.pulp_rpm.DistributionsRpmApi(api_client)
 
         try:
             distribution_task = api_instance.delete(
-                rpm_rpm_distribution_href = distribution.pulp_href
+                rpm_rpm_distribution_href=distribution.pulp_href
             )
 
             wait_for_task_complete(
-                task_name='delete distribution',
-                task_href=distribution_task.task
+                task_name="delete distribution", task_href=distribution_task.task
             )
 
             msg = f"deleted {distribution.name}"

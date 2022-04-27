@@ -6,8 +6,9 @@ from pulpcore.client.pulp_rpm.rest import ApiException
 from pulp_operations.api_client_conf import rpm_configuration
 from pulp_operations.task import wait_for_task_complete
 
-#module logger - child of parent logger 'pulp_operations'
-mlogger = logging.getLogger('pulp_operations.content')
+# module logger - child of parent logger 'pulp_operations'
+mlogger = logging.getLogger("pulp_operations.content")
+
 
 def get_content_by_properties(rpm_properties, repository):
     """
@@ -22,19 +23,19 @@ def get_content_by_properties(rpm_properties, repository):
         content response object
     """
 
-    #Enter a context with an instance of the API client
+    # Enter a context with an instance of the API client
     with pulpcore.client.pulp_rpm.ApiClient(rpm_configuration) as api_client:
 
-        #Create an instance of the API class
+        # Create an instance of the API class
         api_instance = pulpcore.client.pulp_rpm.ContentPackagesApi(api_client)
 
         try:
             content_search = api_instance.list(
-                arch = rpm_properties['arch'],
-                release = rpm_properties['release'],
-                version = rpm_properties['version'],
-                name = rpm_properties['name'],
-                repository_version = repository.latest_version_href
+                arch=rpm_properties["arch"],
+                release=rpm_properties["release"],
+                version=rpm_properties["version"],
+                name=rpm_properties["name"],
+                repository_version=repository.latest_version_href,
             )
             content = content_search.results[0]
 
@@ -48,6 +49,7 @@ def get_content_by_properties(rpm_properties, repository):
             mlogger.error(msg)
             raise
 
+
 def get_content_by_hash(sha256hash: str):
     """
     Summary:
@@ -59,10 +61,10 @@ def get_content_by_hash(sha256hash: str):
         content response object
     """
 
-    #Enter a context with an instance of the API client
+    # Enter a context with an instance of the API client
     with pulpcore.client.pulp_rpm.ApiClient(rpm_configuration) as api_client:
 
-        #Create an instance of the API class
+        # Create an instance of the API class
         api_instance = pulpcore.client.pulp_rpm.ContentPackagesApi(api_client)
 
         try:
@@ -78,6 +80,7 @@ def get_content_by_hash(sha256hash: str):
             mlogger.error(msg)
             raise
 
+
 def create_content(artifact, rpm_file):
     """
     Summary:
@@ -91,25 +94,23 @@ def create_content(artifact, rpm_file):
         None
     """
 
-    #Enter a context with an instance of the API client
+    # Enter a context with an instance of the API client
     with pulpcore.client.pulp_rpm.ApiClient(rpm_configuration) as api_client:
 
-        #Create an instance of the API class
+        # Create an instance of the API class
         api_instance = pulpcore.client.pulp_rpm.ContentPackagesApi(api_client)
 
         try:
             content_task = api_instance.create(
-                artifact = artifact.pulp_href,
-                relative_path=rpm_file
+                artifact=artifact.pulp_href, relative_path=rpm_file
             )
 
-            #wait for task to complete
+            # wait for task to complete
             wait_for_task_complete(
-                task_name='create content',
-                task_href=content_task.task
+                task_name="create content", task_href=content_task.task
             )
 
-            #logging
+            # logging
             msg = "created"
             mlogger.info(msg)
 

@@ -5,8 +5,9 @@ import pulpcore.client.pulpcore
 from pulpcore.client.pulpcore.rest import ApiException
 from pulp_operations.api_client_conf import core_configuration
 
-#module logger - child of parent logger 'pulp_operations'
-mlogger = logging.getLogger('pulp_operations.signing')
+# module logger - child of parent logger 'pulp_operations'
+mlogger = logging.getLogger("pulp_operations.signing")
+
 
 def get_signservice(signservice_name: str):
     """
@@ -20,10 +21,10 @@ def get_signservice(signservice_name: str):
         signing service response object
     """
 
-    #Enter a context with an instance of the API client
+    # Enter a context with an instance of the API client
     with pulpcore.client.pulpcore.ApiClient(core_configuration) as api_client:
 
-        #Create an instance of the API class
+        # Create an instance of the API class
         api_instance = pulpcore.client.pulpcore.SigningServicesApi(api_client)
 
         try:
