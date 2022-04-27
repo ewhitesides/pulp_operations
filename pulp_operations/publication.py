@@ -6,8 +6,9 @@ from pulpcore.client.pulp_rpm.rest import ApiException
 from pulp_operations.api_client_conf import rpm_configuration
 from pulp_operations.task import wait_for_task_complete, get_task_created_resource
 
-#module logger - child of parent logger 'pulp_operations'
-mlogger = logging.getLogger('pulp_operations.publication')
+# module logger - child of parent logger 'pulp_operations'
+mlogger = logging.getLogger("pulp_operations.publication")
+
 
 def get_publication(repoversion_href: str):
     """
@@ -21,32 +22,35 @@ def get_publication(repoversion_href: str):
         publication href
     """
 
-    #enter a context with an instance of the API client
+    # enter a context with an instance of the API client
     with pulpcore.client.pulp_rpm.ApiClient(rpm_configuration) as api_client:
 
-        #Create an instance of the API class
+        # Create an instance of the API class
         api_instance = pulpcore.client.pulp_rpm.PublicationsRpmApi(api_client)
 
         try:
-            #get publication associated with the repository version
-            publication_href = api_instance.list(
-                repository_version = repoversion_href
-            ).results[0].pulp_href
+            # get publication associated with the repository version
+            publication_href = (
+                api_instance.list(repository_version=repoversion_href)
+                .results[0]
+                .pulp_href
+            )
 
-            #logging
+            # logging
             msg = f"found {publication_href}"
             mlogger.info(msg)
 
-            #output
+            # output
             return publication_href
 
-        #if ApiException body matches 'not found' treat it like an IndexError
+        # if ApiException body matches 'not found' treat it like an IndexError
         except ApiException as err:
-            if 'not found' in err.body:
+            if "not found" in err.body:
                 raise IndexError(err) from err
             msg = f"Exception when calling PublicationsRpmApi->list: {err}"
             mlogger.error(msg)
             raise
+
 
 def create_publication(repoversion_href: str):
     """
@@ -60,40 +64,42 @@ def create_publication(repoversion_href: str):
         the publication href
     """
 
-    #Enter a context with an instance of the API client
+    # Enter a context with an instance of the API client
     with pulpcore.client.pulp_rpm.ApiClient(rpm_configuration) as api_client:
 
-        #Create an instance of the API class
+        # Create an instance of the API class
         api_instance = pulpcore.client.pulp_rpm.PublicationsRpmApi(api_client)
 
         try:
-            #Create new publication. This links to latest repo version by default.
+            # Create new publication. This links to latest repo version by default.
             publication_task = api_instance.create(
-                rpm_rpm_publication = {
-                    'repository_version': repoversion_href,
+                rpm_rpm_publication={
+                    "repository_version": repoversion_href,
                     #'metadata_checksum_type': 'sha256', #sha256 is default
                     #'package_checksum_type': 'sha256' #sha256 is default
                 }
             )
 
-            #wait for task to complete. output publication href
+            # wait for task to complete. output publication href
             wait_for_task_complete(
-                task_name='create publication',
+                task_name="create publication", task_href=publication_task.task
+            )
+            publication_href = get_task_created_resource(
                 task_href=publication_task.task
             )
-            publication_href = get_task_created_resource(task_href=publication_task.task)
 
-            #logging
+            # logging
             msg = f"created {publication_href}"
             mlogger.info(msg)
 
-            #output
+            # output
             return publication_href
 
         except ApiException as err:
             msg = f"Exception when calling PublicationsRpmApi->create: {err}"
             mlogger.error(msg)
             raise
+
 
 def list_publication():
     """
@@ -107,10 +113,10 @@ def list_publication():
         list of publications
     """
 
-    #Enter a context with an instance of the API client
+    # Enter a context with an instance of the API client
     with pulpcore.client.pulp_rpm.ApiClient(rpm_configuration) as api_client:
 
-        #Create an instance of the API class
+        # Create an instance of the API class
         api_instance = pulpcore.client.pulp_rpm.PublicationsRpmApi(api_client)
 
         try:
