@@ -75,8 +75,8 @@ def create_publication(repoversion_href: str):
             publication_task = api_instance.create(
                 rpm_rpm_publication={
                     "repository_version": repoversion_href,
-                    #'metadata_checksum_type': 'sha256', #sha256 is default
-                    #'package_checksum_type': 'sha256' #sha256 is default
+                    # 'metadata_checksum_type': 'sha256', #sha256 is default
+                    # 'package_checksum_type': 'sha256' #sha256 is default
                 }
             )
 
