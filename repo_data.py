@@ -3,7 +3,7 @@ data structure used for repo_sync.py
 
 structure follows this format:
 repo_data = {
-    'c7': {                         
+    'c7': {
         'repository subject': {
             'abbreviated name of company/institution providing the repo': 'url'
         }

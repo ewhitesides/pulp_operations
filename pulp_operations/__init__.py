@@ -2,7 +2,6 @@
 init
 """
 
-from pulp_operations.logger import logger
 from pulp_operations.repository import (
     get_repo,
     get_repoversion,
