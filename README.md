@@ -1,10 +1,32 @@
 # README
 
-## setup
+## development setup
+
+### setup with vscode devcontainer
 
 ```bash
+#prerequisites
+#ensure you have vscode and docker desktop installed on your machine
+#in vscode, Ctrl-Shift-P and type "install devcontainer cli"
+
 #clone/pull repo
-git clone git@github.com:ewhitesides/pulp_operations.git
+git clone <url>
+
+#add the following to .env at base of code folder
+PULP_USER=<user>
+PULP_PASS=<password>
+PULP_SERVER=<server>
+PULP_LOGPATH=/var/log/pulp_operations.log # or whatever path you'd like
+
+#open directly into vscode as devcontainer
+cd <code_folder>
+devcontainer open .
+```
+
+### setup with local virtual environment
+```bash
+#clone/pull repo
+git clone <url>
 
 #setup the virtual environment
 pip3 install virtualenv
@@ -16,12 +38,13 @@ virtualenv .venv
 PULP_USER=<user>
 PULP_PASS=<password>
 PULP_SERVER=<server>
+PULP_LOGPATH=/var/log/pulp_operations.log # or whatever path you'd like
 
 #activate virtual environment with below command
 source .venv/bin/activate
 ```
 
-## examples
+## Example of syncing/distributing a repo
 
 ### sync_repo.py
 
@@ -35,45 +58,17 @@ runs all the necessary steps to distribute latest version of repositories using 
 
 ```bash
 #sync repos daily at 3:30am
-30 3 * * * /root/pulp_operations_venv/bin/python /root/pulp_operations_code/sync_repo.py
+30 3 * * * /path/to/venv/bin/python /path/to/pulp_operations_code/sync_repo.py
 
 #distribute repos biweekly sunday at 4:30am
-30 4 * * 7 /root/pulp_operations_venv/bin/python /root/pulp_operations_code/distribute_repo.py
+30 4 * * 7 /path/to/venv/bin/python /path/to/pulp_operations/distribute_repo.py
 ```
 
-### add_rpms.py
+## Additional scripts
 
-```bash
-#if the repo_name does not exist, it will be created 
-#copy rpm files to same folder level as add_rpms.py, 
-#then run add_rpms.py
-python add_rpms.py --repo_name signed-r8-myrepo
-```
+the base path contains numerous scripts for basic operations
 
-### remove a rpm from a repository
-
-```python
-import urllib3
-import pulp_operations
-
-#disable ssl
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-#remove rpm from repository
-pulp_operations.remove_rpm(
-    rpm_file='snake-server-0.11-0.20.el6.noarch.rpm',
-    repo_name='test-repo'
-)
-
-#release updated version of the repository to the distribution
-pulp_operations.release(
-    repo_name='my_pulp_repository',
-    version_rollback=0,
-    dist_name='latest'
-)
-```
-
-### rolling back to the previous version of a repository
+## Example of rolling back to the previous version of a repository
 
 ```python
 import urllib3
@@ -89,7 +84,7 @@ pulp_operations.release(
 )
 ```
 
-### other management commands
+## Other examples
 
 ```python
 import urllib3
