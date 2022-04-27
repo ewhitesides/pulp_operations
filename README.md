@@ -64,10 +64,6 @@ runs all the necessary steps to distribute latest version of repositories using 
 30 4 * * 7 /path/to/venv/bin/python /path/to/pulp_operations/distribute_repo.py
 ```
 
-## Additional scripts
-
-the base path contains numerous scripts for basic operations
-
 ## Example of rolling back to the previous version of a repository
 
 ```python
@@ -84,7 +80,9 @@ pulp_operations.release(
 )
 ```
 
-## Other examples
+## Additional examples
+
+the base path contains numerous scripts for basic operations, in addition to the below examples
 
 ```python
 import urllib3
