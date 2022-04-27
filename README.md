@@ -91,23 +91,18 @@ import pulp_operations
 #disable ssl
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-#general repository operations
-pulp_operations.list_repository_names() #list all repository names
-pulp_operations.repository.list_repo() #list all properties of all repositories
-pulp_operations.remove_repository('test-repo')
+#list all properties of all repositories
+pulp_operations.repository.list_repo()
 
-#general remote operations
+#list all properties of all remotes
 pulp_operations.remote.list_remote()
-pulp_operations.remove_remote('test-remote')
 
 #general publication operations
 pulp_operations.publication.list_publication()
 
 #general distribution operations
-pulp_operations.list_distribution_names() #list all distribution names
 pulp_operations.distribution.list_distribution() #list all properties of all distributions
 pulp_operations.distribution.get_distribution_url('test-dist')
-pulp_operations.remove_distribution('test-dist')
 ```
 
 ## finding repositories to sync from
