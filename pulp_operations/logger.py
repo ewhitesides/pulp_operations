@@ -1,5 +1,7 @@
 """parent logging settings"""
 
+import os
+from dotenv import load_dotenv
 import logging
 import logging.handlers as handlers
 
@@ -13,9 +15,13 @@ formatter = logging.Formatter(
     datefmt="%Y-%m-%dT%H:%M:%S%z",
 )
 
+# get logpath from environment
+load_dotenv()
+logpath = os.getenv("PULP_LOGPATH")
+
 # define time-based rotating file handler
 fh = handlers.TimedRotatingFileHandler(
-    "/var/log/pulp_operations.log",  # path
+    logpath,  # path
     when="d",  # rotate on days
     interval=1,  # number of days
     backupCount=30,  # automatically delete after this qty

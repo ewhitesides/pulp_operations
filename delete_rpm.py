@@ -13,10 +13,11 @@ from pulp_operations.file import get_rpm_properties
 from pulp_operations.content import get_content_by_properties
 from pulp_operations import release
 
-#disable ssl
+# disable ssl
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-def delete_rpm(rpm_file: str, repo_name:str) -> None:
+
+def delete_rpm(rpm_file: str, repo_name: str) -> None:
     """
     Summary:
         removes a rpm from a repository and updates the distribution
@@ -29,34 +30,35 @@ def delete_rpm(rpm_file: str, repo_name:str) -> None:
         None
     """
 
-    #repository
+    # repository
     repository = get_repo(repo_name)
 
-    #get properties from rpm_file name
+    # get properties from rpm_file name
     rpm_file_properties = get_rpm_properties(rpm_file)
 
-    #find content by rpm_file
+    # find content by rpm_file
     content = get_content_by_properties(rpm_file_properties, repository)
 
-    #remove content from repository
+    # remove content from repository
     add_remove_file_repo('remove', repository, content)
+
 
 if __name__ == '__main__':
 
-    #get arguments from cli
+    # get arguments from cli
     parser = argparse.ArgumentParser()
     parser.add_argument('--rpm_file',  required=True, action='store')
     parser.add_argument('--repo_name', required=True, action='store')
     parser.add_argument('--dist_name', required=True, action='store')
     args = parser.parse_args()
 
-    #delete the rpm
+    # delete the rpm
     delete_rpm(
         rpm_file=args.rpm_file,
         repo_name=args.repo_name
     )
 
-    #update the distribution
+    # update the distribution
     release(
         repo_name=args.repo_name,
         version_rollback=0,

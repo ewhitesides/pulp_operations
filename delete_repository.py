@@ -11,8 +11,9 @@ import argparse
 import urllib3
 import pulp_operations
 
-#disable ssl
+# disable ssl
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 
 def delete_repository(name: str) -> None:
     """
@@ -26,17 +27,18 @@ def delete_repository(name: str) -> None:
         None
     """
 
-    #get the repository object
+    # get the repository object
     repository = pulp_operations.repository.get_repo(name)
 
-    #delete the repository object
+    # delete the repository object
     pulp_operations.repository.delete_repo(repository)
 
+
 if __name__ == '__main__':
-    #get arguments from cli
+    # get arguments from cli
     parser = argparse.ArgumentParser()
     parser.add_argument('--name', required=True, action='store')
     args = parser.parse_args()
 
-    #run
+    # run
     delete_repository(name=args.name)

@@ -10,8 +10,9 @@ import argparse
 import urllib3
 import pulp_operations
 
-#disable ssl
+# disable ssl
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 
 def delete_distribution(name: str) -> None:
     """
@@ -25,17 +26,18 @@ def delete_distribution(name: str) -> None:
         None
     """
 
-    #get the distribution object
+    # get the distribution object
     distribution = pulp_operations.distribution.get_distribution(name)
 
-    #delete the distribution object
+    # delete the distribution object
     pulp_operations.distribution.delete_distribution(distribution)
 
+
 if __name__ == '__main__':
-    #get arguments from cli
+    # get arguments from cli
     parser = argparse.ArgumentParser()
     parser.add_argument('--name', required=True, action='store')
     args = parser.parse_args()
 
-    #run
+    # run
     delete_distribution(name=args.name)

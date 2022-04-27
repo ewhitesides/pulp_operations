@@ -42,7 +42,7 @@ repo_data = {
             'google': 'https://packages.cloud.google.com/yum/repos/google-cloud-monitoring-el7-x86_64-all/'
         }
     },
-    'c8s': { #centos8 stream
+    'c8s': {  # centos8 stream
         'appstream': {
             'umd': 'https://mirror.umd.edu/centos/8-stream/AppStream/x86_64/os/',
             'prnc': 'https://mirror.math.princeton.edu/pub/centos/8-stream/AppStream/x86_64/os/',

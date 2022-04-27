@@ -16,8 +16,9 @@ from pulp_operations.artifact import get_artifact, create_artifact
 from pulp_operations.file import get_sha256hash
 from pulp_operations.content import get_content_by_hash, create_content
 
-#disable ssl
+# disable ssl
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 
 def add_rpm(rpm_file: str, repo_name: str, signservice_name: str = None) -> None:
     """
@@ -33,41 +34,41 @@ def add_rpm(rpm_file: str, repo_name: str, signservice_name: str = None) -> None
         None
     """
 
-    #repository
+    # repository
     try:
         repository = get_repo(repo_name)
     except IndexError:
         repository = create_repo(repo_name, signservice_name)
 
-    #get sha256 of file
+    # get sha256 of file
     rpm_file_sha256 = get_sha256hash(rpm_file)
 
-    #artifact
+    # artifact
     try:
         artifact = get_artifact(rpm_file_sha256)
     except IndexError:
         artifact = create_artifact(rpm_file)
 
-    #content
+    # content
     try:
         content = get_content_by_hash(rpm_file_sha256)
     except IndexError:
         create_content(artifact, rpm_file)
         content = get_content_by_hash(rpm_file_sha256)
 
-    #add content to repository
+    # add content to repository
     add_remove_file_repo('add', repository, content)
 
-if __name__ == '__main__':
 
-    #get arguments from cli
+if __name__ == '__main__':
+    # get arguments from cli
     parser = argparse.ArgumentParser()
     parser.add_argument('--repo_name', required=True, action='store')
     parser.add_argument('--dist_name', required=True, action='store')
     parser.add_argument('--sign_service', required=True, action='store')
     args = parser.parse_args()
 
-    #run add_rpm function on each rpm file found in this directory
+    # run add_rpm function on each rpm file found in this directory
     for file in pathlib.Path('.').glob('*.rpm'):
         add_rpm(
             rpm_file=str(file),
@@ -75,7 +76,7 @@ if __name__ == '__main__':
             signservice_name=args.sign_service
         )
 
-    #release updated version of the repository to the distribution
+    # release updated version of the repository to the distribution
     release(
         repo_name=args.repo_name,
         version_rollback=0,
