@@ -10,3 +10,7 @@
 #Python cache files
 __pycache__
 *.pyc
+
+#Build files
+build/
+pulp_operations.egg-info/
