@@ -8,6 +8,7 @@ from pulp_operations.remote import get_remote, create_remote
 from pulp_operations.publication import get_publication, create_publication
 from pulp_operations.distribution import get_distribution, update_distribution, create_distribution
 
+
 def sync(repo_name: str, remote_name: str, remote_url: str, signservice_name: str = None):
     """
     Summary:
@@ -23,20 +24,21 @@ def sync(repo_name: str, remote_name: str, remote_url: str, signservice_name: st
         None
     """
 
-    #repository
+    # repository
     try:
         repository = get_repo(repo_name)
     except IndexError:
         repository = create_repo(repo_name, signservice_name)
 
-    #remote
+    # remote
     try:
         remote = get_remote(remote_name)
     except IndexError:
         remote = create_remote(remote_name, remote_url)
 
-    #sync
+    # sync
     sync_repo(repository, remote)
+
 
 def release(repo_name: str, version_rollback: int, dist_name: str):
     """
@@ -56,17 +58,17 @@ def release(repo_name: str, version_rollback: int, dist_name: str):
         None
     """
 
-    #get repository latest version
+    # get repository latest version
     repository = get_repo(repo_name)
     repoversion_href = get_repoversion(repository.latest_version_href, version_rollback)
 
-    #publication
+    # publication
     try:
         publication_href = get_publication(repoversion_href)
     except IndexError:
         publication_href = create_publication(repoversion_href)
 
-    #distribution
+    # distribution
     try:
         distribution = get_distribution(dist_name)
         update_distribution(distribution, publication_href)
