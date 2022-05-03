@@ -1,5 +1,9 @@
 # README
 
+- pulp_operations is python code to interact with pulp3 api from redhat.
+
+- this code has been used in a production environment with pulpcore 3.12.2 and pulp-rpm 3.11.1
+
 ## development setup
 
 ### setup with vscode devcontainer

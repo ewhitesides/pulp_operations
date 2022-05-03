@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup(
     name="pulp_operations",
-    version="3.12.2",
+    version="1.0.0",
     author="Erik Whitesides",
     author_email="eklevjer@gmail.com",
     description="tool to perform various tasks on pulp server",
